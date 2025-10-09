@@ -5,54 +5,68 @@ graph.py: Graph data structures and algorithms for pytms
 from dataclasses import dataclass
 from typing import Literal, List, Dict, Tuple, Optional
 
-NodeID = str
-EdgeID = str
-PathID = str
+NodeID = str  # Alias for node identifiers
+EdgeID = str  # Alias for edge identifiers
+PathID = str  # Alias for path identifiers
 
 
 @dataclass
 class Coordinate:
+    """A 2D coordinate."""
+
     x: float
     y: float
 
 
 @dataclass
+class GraphNode:
+    """A node in the graph."""
+
+    loc: Coordinate
+    node_id: NodeID
+    type: Literal["main", "station", "side"]
+
+
+@dataclass
 class GraphEdge:
-    edgeID: EdgeID
+    """A directed edge in the graph."""
+
+    edge_id: EdgeID
     u: NodeID
     v: NodeID
     length: float
 
 
 @dataclass
-class GraphNode:
-    loc: Coordinate
-    nodeID: NodeID
-    type: Literal["main", "station", "side"]
-
-
-@dataclass
 class GraphData:
+    """Container for graph data: nodes and edges."""
+
     nodes: List[GraphNode]
     edges: List[GraphEdge]
 
 
 @dataclass
 class GraphPosition:
-    edge: GraphEdge
-    distanceAlongEdge: float
+    """A position along a directed edge in the graph."""
+
+    edge: EdgeID
+    distance_along_edge: float
 
 
 @dataclass
 class PathInfo:
-    pathID: PathID
+    """Information about a path through the graph."""
+
+    path_id: PathID
     route: List[NodeID]
     length: float
 
 
 @dataclass
-class SegmentSection:
-    edge: GraphEdge
+class Segment:
+    """A segment of an edge defined by start and end distances along the edge."""
+
+    edge: EdgeID
     start: float
     end: float
 
@@ -62,8 +76,8 @@ class SegmentSection:
     def __len__(self) -> int:
         return int(self.get_length())
 
-    def clone(self) -> "SegmentSection":
-        return SegmentSection(self.edge, self.start, self.end)
+    def clone(self) -> "Segment":
+        return Segment(self.edge, self.start, self.end)
 
 
 DistanceTable = Dict[NodeID, Dict[NodeID, float]]
@@ -75,7 +89,7 @@ def floyd_warshall(
     nodes: List[GraphNode], edges: List[GraphEdge]
 ) -> FloydWarshallResult:
     """Compute shortest paths between all pairs of nodes using the Floyd-Warshall algorithm."""
-    node_ids: List[NodeID] = [node.nodeID for node in nodes]
+    node_ids: List[NodeID] = [node.node_id for node in nodes]
     distances: DistanceTable = {
         i: {j: float("inf") for j in node_ids} for i in node_ids
     }
@@ -108,6 +122,9 @@ def get_path_key(start: NodeID, end: NodeID) -> str:
 
 
 class Graph:
+    """Graph data structure with nodes and directed edges,
+    includes shortest path computations."""
+
     def __init__(self, graph_data: GraphData | None = None) -> None:
         self.edges: List[GraphEdge] = []
         self.nodes: List[GraphNode] = []
@@ -120,9 +137,9 @@ class Graph:
         if graph_data and (graph_data.edges or graph_data.nodes):
             self.add_graph_data(graph_data)
 
-    def _node_exists(self, nodeID: NodeID) -> bool:
+    def _node_exists(self, node_id: NodeID) -> bool:
         """Check if a node with the given id exists in the graph"""
-        return any(node.nodeID == nodeID for node in self.nodes)
+        return any(node.node_id == node_id for node in self.nodes)
 
     def _edge_exists(self, edge_id: EdgeID) -> bool:
         """Check if an edge with the given id exists in the graph"""
@@ -130,49 +147,50 @@ class Graph:
 
     def _rebuild_maps(self) -> None:
         """Rebuild the node and edge maps from the current lists."""
-        self._node_map = {node.nodeID: node for node in self.nodes}
-        self._edge_map = {edge.edgeID: edge for edge in self.edges}
+        self._node_map = {node.node_id: node for node in self.nodes}
+        self._edge_map = {edge.edge_id: edge for edge in self.edges}
 
     def add_node(self, node: GraphNode) -> bool:
         """Add a node to the graph. Returns True if added, False if nodeID already exists."""
-        if self._node_exists(node.nodeID):
+        if self._node_exists(node.node_id):
             return False
         self.nodes.append(node)
+        self._node_map[node.node_id] = node
         return True
 
     def add_edge(self, edge: GraphEdge) -> bool:
         """Add an edge to the graph. Returns True if added, False if edgeID already exists or nodes do not exist."""
         if (
-            (not self._edge_exists(edge.edgeID))
+            (not self._edge_exists(edge.edge_id))
             and self._node_exists(edge.u)
             and self._node_exists(edge.v)
         ):
             self.edges.append(edge)
-            self._edge_map[edge.edgeID] = edge
+            self._edge_map[edge.edge_id] = edge
             return True
         return False
 
     def add_node_list(self, node_list: List[GraphNode]) -> bool:
         """Add multiple nodes to the graph. Returns True if all added, False if any nodeID already exists."""
-        completionChecker: bool = True
+        success_flag: bool = True
         for node in node_list:
             if self.add_node(node) == False:
-                completionChecker = False
-        return completionChecker
+                success_flag = False
+        return success_flag
 
     def add_edge_list(self, edge_list: List[GraphEdge]) -> bool:
         """Add multiple edges to the graph. Returns True if all added, False if any edgeID already exists or nodes do not exist."""
-        completionChecker: bool = True
+        success_flag: bool = True
         for edge in edge_list:
             if self.add_edge(edge) == False:
-                completionChecker = False
-        return completionChecker
+                success_flag = False
+        return success_flag
 
     def add_graph_data(self, graph_data: GraphData) -> bool:
         """Add multiple nodes and edges from GraphData to the graph. Returns True if all added, False if any fail."""
-        node_completion: bool = self.add_node_list(graph_data.nodes)
-        edge_completion: bool = self.add_edge_list(graph_data.edges)
-        return node_completion and edge_completion
+        node_success_flag: bool = self.add_node_list(graph_data.nodes)
+        edge_success_flag: bool = self.add_edge_list(graph_data.edges)
+        return node_success_flag and edge_success_flag
 
     def _compute_shortest_paths(self) -> None:
         """Compute shortest paths between all pairs of nodes using the Floyd-Warshall algorithm."""
@@ -197,9 +215,9 @@ class Graph:
 
     def get_shortest_path(self, start: NodeID, end: NodeID) -> PathInfo:
         """Get the shortest path from start node to end node. Computes paths if not already done."""
-        pathID: PathID = get_path_key(start, end)
-        if pathID in self._shortest_path_cache:
-            return self._shortest_path_cache[pathID]
+        path_id: PathID = get_path_key(start, end)
+        if path_id in self._shortest_path_cache:
+            return self._shortest_path_cache[path_id]
         if not self._distances or not self._next_node:
             self._compute_shortest_paths()
         if self._distances[start][end] == float("inf"):
@@ -207,12 +225,13 @@ class Graph:
         else:
             route = self._reconstruct_path(start, end)
             entry = PathInfo(
-                pathID=pathID, route=route, length=self._distances[start][end]
+                path_id=path_id, route=route, length=self._distances[start][end]
             )
-        self._shortest_path_cache[pathID] = entry
+        self._shortest_path_cache[path_id] = entry
         return entry
 
     def get_edge(self, u: NodeID, v: NodeID) -> GraphEdge:
+        """Get the edge from node u to node v."""
         edge_id: EdgeID = get_edge_key(u, v)
         if edge_id not in self._edge_map:
             self._rebuild_maps()
@@ -222,13 +241,28 @@ class Graph:
 
     def get_next_edge(self, u: NodeID, v: NodeID) -> GraphEdge:
         """Get the next edge on the shortest path from node u to node v."""
-        pathInfo: PathInfo = self.get_shortest_path(u, v)
-        if not pathInfo.route or len(pathInfo.route) < 2:
+        path_info: PathInfo = self.get_shortest_path(u, v)
+        if not path_info.route or len(path_info.route) < 2:
             raise ValueError(f"No path from {u} to {v}")
-        return self.get_edge(u, pathInfo.route[1])
+        return self.get_edge(u, path_info.route[1])
 
-    def get_distance_to_node(
-        self, currentPosition: GraphPosition, targetNode: NodeID
+    def get_distance_between_positions(
+        self, u_position: GraphPosition, v_position: GraphPosition
     ) -> float:
-        pathInfo = self.get_shortest_path(currentPosition.edge.v, targetNode)
-        return pathInfo.length - currentPosition.distanceAlongEdge
+        """Get the distance between two GraphPositions."""
+        u_node: NodeID = self._edge_map[u_position.edge].v
+        v_node: NodeID = self._edge_map[v_position.edge].u
+        nodal_distance: float = self.get_shortest_path(u_node, v_node).length
+        return (
+            u_position.distance_along_edge
+            + nodal_distance
+            + v_position.distance_along_edge
+        )
+
+    def get_position_to_node_distance(
+        self, u_position: GraphPosition, v_node: NodeID
+    ) -> float:
+        """Get the distance from a given GraphPosition to a target node."""
+        edgeV = self._edge_map[u_position.edge].v
+        pathInfo = self.get_shortest_path(edgeV, v_node)
+        return pathInfo.length + u_position.distance_along_edge
