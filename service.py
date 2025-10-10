@@ -5,6 +5,7 @@ from graph import NodeID, GraphPosition
 ServiceID = str
 RouteID = str
 Route = List["RouteStop"]
+StopIndex = int
 ServiceState = Literal[
     "stationary", "dwelling", "accelerating", "decelerating", "cruising"
 ]
@@ -32,6 +33,13 @@ class Service:
     vehicle: Vehicle
 
 
+def get_service_first_stop(service: Service) -> tuple[NodeID, StopIndex]:
+    if service.initial_position == service.route[0].node_id:
+        return service.route[1].node_id, 1
+    else:
+        return service.route[0].node_id, 0
+
+
 class SimulationService(Service):
     def __init__(self, service: Service, initial_position: GraphPosition):
         super().__init__(**service.__dict__)
@@ -39,11 +47,7 @@ class SimulationService(Service):
         self.state: ServiceState = "stationary"
         self.velocity: float = 0.0
         self.remaining_dwell: float = 0.0
-        self.next_stop: NodeID = self.route[0].node_id
-        self._next_stop_index: int = 0
-
-        if self.initial_position == self.next_stop:
-            self._advance_next_stop()
+        self.next_stop, self._next_stop_index = get_service_first_stop(service)
 
     def _advance_next_stop(self) -> None:
         new_index: int = (self._next_stop_index + 1) % len(self.route)
