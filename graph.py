@@ -266,3 +266,9 @@ class Graph:
         edgeV = self._edge_map[u_position.edge].v
         pathInfo = self.get_shortest_path(edgeV, v_node)
         return pathInfo.length + u_position.distance_along_edge
+
+    def get_path_start_position(self, u: NodeID, v: NodeID) -> GraphPosition:
+        """Get the starting position on the path from u to v."""
+        path: PathInfo = self.get_shortest_path(u, v)
+        first_edge: GraphEdge = self.get_edge(path.route[0], path.route[1])
+        return GraphPosition(first_edge.edge_id, 0.0)
