@@ -33,6 +33,19 @@ class Service:
     vehicle: Vehicle
 
 
+@dataclass
+class ServiceLog:
+    service_id: ServiceID
+    initial_position: NodeID
+    route: Route
+    vehicle: Vehicle
+    current_position: GraphPosition
+    state: ServiceState
+    velocity: Annotated[float, "metres per second"]
+    remaining_dwell: Annotated[float, "seconds"]
+    next_stop: NodeID
+
+
 def get_service_first_stop(service: Service) -> tuple[NodeID, StopIndex]:
     if service.initial_position == service.route[0].node_id:
         return service.route[1].node_id, 1
