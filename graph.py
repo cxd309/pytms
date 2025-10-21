@@ -3,7 +3,7 @@ graph.py: Graph data structures and algorithms for pytms
 """
 
 from dataclasses import dataclass
-from typing import Literal, List, Dict, Tuple, Optional
+from typing import Literal, List, Dict, Tuple, Optional, Annotated
 
 NodeID = str  # Alias for node identifiers
 EdgeID = str  # Alias for edge identifiers
@@ -14,8 +14,8 @@ PathID = str  # Alias for path identifiers
 class Coordinate:
     """A 2D coordinate."""
 
-    x: float
-    y: float
+    x: Annotated[float, "metres"]
+    y: Annotated[float, "metres"]
 
 
 @dataclass
@@ -34,7 +34,7 @@ class GraphEdge:
     edge_id: EdgeID
     u: NodeID
     v: NodeID
-    length: float
+    length: Annotated[float, "metres"]
 
 
 @dataclass
@@ -50,7 +50,7 @@ class GraphPosition:
     """A position along a directed edge in the graph."""
 
     edge: EdgeID
-    distance_along_edge: float
+    distance_along_edge: Annotated[float, "metres"]
 
 
 @dataclass
@@ -59,7 +59,7 @@ class PathInfo:
 
     path_id: PathID
     route: List[NodeID]
-    length: float
+    length: Annotated[float, "metres"]
 
 
 @dataclass
@@ -67,8 +67,8 @@ class Segment:
     """A segment of an edge defined by start and end distances along the edge."""
 
     edge: EdgeID
-    start: float
-    end: float
+    start: Annotated[float, "metres"]
+    end: Annotated[float, "metres"]
 
     def get_length(self) -> float:
         return self.end - self.start

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Literal, List
+from typing import Literal, List, Annotated
 from graph import NodeID, GraphPosition
 
 ServiceID = str
@@ -14,15 +14,15 @@ ServiceState = Literal[
 @dataclass
 class RouteStop:
     node_id: NodeID
-    t_dwell: float
+    t_dwell: Annotated[float, "seconds"]
 
 
 @dataclass
 class Vehicle:
     name: str
-    a_acc: float
-    a_dcc: float
-    v_max: float
+    a_acc: Annotated[float, "metres per second per second"]
+    a_dcc: Annotated[float, "metres per second per second"]
+    v_max: Annotated[float, "metres per second"]
 
 
 @dataclass
@@ -45,8 +45,8 @@ class SimulationService(Service):
         super().__init__(**service.__dict__)
         self.current_position: GraphPosition = initial_position
         self.state: ServiceState = "stationary"
-        self.velocity: float = 0.0
-        self.remaining_dwell: float = 0.0
+        self.velocity: Annotated[float, "metres per second"] = 0.0
+        self.remaining_dwell: Annotated[float, "seconds"] = 0.0
         self.next_stop, self._next_stop_index = get_service_first_stop(service)
 
     def _advance_next_stop(self) -> None:

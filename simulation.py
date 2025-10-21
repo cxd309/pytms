@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Annotated
 from graph import GraphData, Graph, GraphPosition
 from service import Service, SimulationService, get_service_first_stop
 
@@ -9,8 +9,8 @@ SimulationID = str
 @dataclass
 class SimulationMeta:
     simulation_id: SimulationID
-    run_time: float
-    time_step: float
+    run_time: Annotated[float, "seconds"]
+    time_step: Annotated[float, "seconds"]
 
 
 @dataclass
