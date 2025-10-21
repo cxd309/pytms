@@ -107,3 +107,16 @@ class SimulationService(Service):
             case _:
                 a = 0.0
         return (self.velocity * t) + (0.5 * a * (t**2))
+
+    def get_service_log(self) -> ServiceLog:
+        return ServiceLog(
+            service_id=self.service_id,
+            initial_position=self.initial_position,
+            route=self.route,
+            vehicle=self.vehicle,
+            current_position=self.current_position,
+            state=self.state,
+            velocity=self.velocity,
+            remaining_dwell=self.remaining_dwell,
+            next_stop=self.next_stop,
+        )
