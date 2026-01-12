@@ -1,7 +1,27 @@
 [project]
 name = "pytms"
 version = "0.1.0"
-description = "Add your description here"
+description = "A transport simulator build for transport research"
 readme = "README.md"
+authors = [
+    { name = "Chris Davis", email = "chris.davis.ee@gmail.com" }
+]
 requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
 dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/cxd309/pytms"
+Issues = "https://github.com/cxd309/pytms/issues"
+
+[project.scripts]
+pytms = "pytms:main"
+
+[build-system]
+requires = ["uv_build>=0.9.21,<0.10.0"]
+build-backend = "uv_build"
