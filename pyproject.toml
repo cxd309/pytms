@@ -1,6 +1,6 @@
 [project]
 name = "pytms"
-version = "0.1.0"
+version = "0.1.1"
 description = "A transport simulator built for transport research"
 readme = "README.md"
 authors = [
