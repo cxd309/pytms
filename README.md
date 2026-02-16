@@ -79,10 +79,10 @@ for row in result.output:
 
 ### Edge attributes
 
-| Attribute     | Type    | Required | Description                        |
-|---------------|---------|----------|------------------------------------|
-| `length`      | `float` | Yes      | Edge length in metres              |
-| `speed_limit` | `float` | No       | Maximum speed on this edge (m/s)   |
+| Attribute     | Type    | Required | Description                      |
+| ------------- | ------- | -------- | -------------------------------- |
+| `length`      | `float` | Yes      | Edge length in metres            |
+| `speed_limit` | `float` | No       | Maximum speed on this edge (m/s) |
 
 ---
 

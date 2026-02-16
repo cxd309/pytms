@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -48,9 +47,9 @@ class TestFindBinary:
             ),
             patch("pytms.runner.resources.files") as mock_files,
         ):
-            mock_files.return_value.__truediv__.return_value.__truediv__.return_value = MagicMock(
-                __str__=lambda s: str(fake_binary)
-            )
+            files_mock = mock_files.return_value
+            mock_ref = files_mock.__truediv__.return_value.__truediv__.return_value
+            mock_ref.__str__ = lambda s: str(fake_binary)
             result = _find_binary()
         assert result == fake_binary
 
